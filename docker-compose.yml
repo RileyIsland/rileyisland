@@ -1,0 +1,47 @@
+version: "3.8"
+services:
+  app:
+    build:
+      args:
+        uid: 1000
+        user: www
+      context: ./
+    image: rileyisland
+    container_name: rileyisland-app
+    networks:
+      - rileyisland
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+  db:
+    container_name: rileyisland-db
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: ${DB_ALLOW_EMPTY_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+      SERVICE_NAME: mysql
+      SERVICE_TAGS: dev
+    image: mysql
+    networks:
+      - rileyisland
+    restart: unless-stopped
+  nginx:
+    container_name: rileyisland-nginx
+    image: nginx
+    networks:
+      - rileyisland
+    ports:
+      - 8000:80
+    restart: unless-stopped
+    volumes:
+      - ./:/var/www
+      - ./docker-compose/nginx:/etc/nginx/conf.d
+networks:
+  rileyisland:
+    driver: bridge
+volumes:
+  dbdata:
+    driver: local
